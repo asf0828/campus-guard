@@ -46,25 +46,9 @@ Todo el código usa la misma interfaz, al estilo de AIMA-Python, para que los tr
 
 Para el benchmark, un nodo expandido es un nodo al que se le generan sus sucesores. Los tres algoritmos deben contar igual.
 
-## Estructura prevista
+## Documentación
 
-```
-campusguard/
-  problema.py     # clase del problema CampusGuard
-  busquedas.py    # BFS, DFS y A*
-  heuristicas.py  # funciones heurísticas para A*
-docs/
-  modelo.md       # abstracción del entorno y formalización del problema
-benchmark.py      # ejecuta los tres algoritmos y genera la tabla
-requirements.txt
-AGENTS.md         # convenciones para quien trabaje en el repositorio
-```
-
-La justificación del modelo está en [docs/modelo.md](docs/modelo.md). El análisis de complejidad y los resultados del benchmark se irán agregando en `docs/`. Antes de contribuir, lee [AGENTS.md](AGENTS.md).
-
-## Cómo ejecutar
-
-Pendiente. Se completará cuando el código esté integrado.
+La justificación del modelo y de la abstracción del entorno está en [docs/modelo.md](docs/modelo.md). Las convenciones para contribuir al código y a la documentación están en [AGENTS.md](AGENTS.md).
 
 ## Referencias
 

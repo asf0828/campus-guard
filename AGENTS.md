@@ -18,6 +18,21 @@ Las reglas que no se deben romper:
 - Toda acción reduce `r`, `a` o `c`, o cambia `b` de 0 a 1. Por eso el espacio no tiene ciclos y todo camino es finito. Si una acción nueva rompe esta propiedad, DFS deja de tener garantías y hay que discutirlo.
 - Desde el estado inicial `(10, 8, 4, 0, 0)` se alcanzan 935 estados, el costo óptimo es 14 y la solución menos profunda tiene 6 acciones. Si tus cambios alteran estas cifras, algo se rompió en el modelo.
 
+## Organización del código
+
+Al crear archivos, usa esta organización:
+
+| Ruta | Contenido |
+|---|---|
+| `campusguard/problema.py` | Clase del problema CampusGuard |
+| `campusguard/busquedas.py` | BFS, DFS y A*, independientes del problema |
+| `campusguard/heuristicas.py` | Funciones heurísticas para A* |
+| `benchmark.py` | Ejecuta los tres algoritmos y genera la tabla comparativa |
+| `docs/` | Documentación del proyecto en Markdown |
+| `requirements.txt` | Dependencias, si llega a haber alguna |
+
+Cuando exista código ejecutable, agrega al `README.md` una sección que explique cómo correrlo.
+
 ## Interfaz común
 
 La clase del problema sigue la interfaz de AIMA-Python, para que cualquier algoritmo funcione sobre ella sin adaptaciones:
@@ -49,7 +64,7 @@ Las heurísticas viven en `campusguard/heuristicas.py`. Toda heurística nueva d
 - Nombres de módulos, funciones y variables en español y en `snake_case`, sin tildes ni ñ en los identificadores.
 - Cada función pública lleva un docstring corto que diga qué hace, qué recibe y qué devuelve.
 - Si adaptas código de AIMA-Python, indícalo en el docstring del módulo con el enlace al archivo original.
-- Antes de hacer commit, ejecuta `python benchmark.py` y verifica que los tres algoritmos sigan encontrando una solución válida.
+- Antes de hacer commit, ejecuta `python benchmark.py` y verifica que los tres algoritmos sigan encontrando una solución válida. *Nota: `benchmark.py` todavía no existe. Mientras tanto, verifica tus cambios ejecutando directamente el módulo que modificaste.*
 
 ## Documentación
 
