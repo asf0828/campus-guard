@@ -53,9 +53,14 @@ campusguard/
   problema.py     # clase del problema CampusGuard
   busquedas.py    # BFS, DFS y A*
   heuristicas.py  # funciones heurísticas para A*
+docs/
+  modelo.md       # abstracción del entorno y formalización del problema
 benchmark.py      # ejecuta los tres algoritmos y genera la tabla
 requirements.txt
+AGENTS.md         # convenciones para quien trabaje en el repositorio
 ```
+
+La justificación del modelo está en [docs/modelo.md](docs/modelo.md). El análisis de complejidad y los resultados del benchmark se irán agregando en `docs/`. Antes de contribuir, lee [AGENTS.md](AGENTS.md).
 
 ## Cómo ejecutar
 
