@@ -60,7 +60,13 @@ class TestValidacionAima(unittest.TestCase):
         salida = io.StringIO()
         with contextlib.redirect_stdout(salida):
             benchmark.main(["--aima", "--repeticiones", "1", "--formato", "markdown"])
-        self.assertIn("| A* (AIMA, h combinada) | 7 | 14 | Sí | 133 | - |", salida.getvalue())
+        self.assertIn("| A* (AIMA, h combinada) | 7 | 14 | Sí | (2, 1, 4, 2, 1) | 133 | - |",
+                      salida.getvalue())
+
+    def test_estados_finales(self):
+        filas = {f.nombre: f for f in benchmark.ejecutar(repeticiones=1, incluir_aima=True)}
+        self.assertEqual(filas["BFS (AIMA)"].resultado.estado_final, (1, 1, 3, 0, 1))
+        self.assertEqual(filas["DFS (AIMA)"].resultado.estado_final, (0, 0, 3, 5, 1))
 
     def test_tabla_texto_separa_las_filas_de_aima(self):
         filas = benchmark.ejecutar(repeticiones=1, incluir_aima=True)

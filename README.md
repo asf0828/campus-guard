@@ -56,7 +56,7 @@ cd campus-guard
 python benchmark.py
 ```
 
-El benchmark ejecuta BFS, DFS y A* (con tres heurísticas) sobre el mismo estado inicial y muestra una tabla con las acciones del plan, su costo, si es óptimo, los nodos expandidos, el máximo de estados en memoria y el tiempo promedio. Algunas opciones útiles:
+El benchmark ejecuta BFS, DFS y A* (con tres heurísticas) sobre el mismo estado inicial y muestra una tabla con las acciones del plan, su costo, si es óptimo, el estado final al que llega, los nodos expandidos, el máximo de estados en memoria y el tiempo promedio. Algunas opciones útiles:
 
 ```bash
 python benchmark.py --planes                  # muestra el plan de cada algoritmo
