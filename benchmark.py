@@ -31,7 +31,12 @@ from campusguard.busquedas import (
     busqueda_profundidad,
 )
 from campusguard.heuristicas import h_combinada, h_maxima, h_nula
-from campusguard.problema import ESTADO_INICIAL, CampusGuard
+from campusguard.problema import (
+    ESTADO_INICIAL,
+    INASISTENCIAS_META,
+    RIESGO_META,
+    CampusGuard,
+)
 from campusguard import validacion_aima
 
 ALGORITMOS: list[tuple[str, Callable[[CampusGuard], Resultado]]] = [
@@ -67,6 +72,7 @@ COLUMNAS = [
     "Acciones",
     "Costo",
     "Óptimo",
+    "Estado final",
     "Nodos expandidos",
     "Estados en memoria (máx.)",
     "Tiempo (ms)",
@@ -132,21 +138,22 @@ def _valores(fila: Fila) -> list[str]:
     # AIMA no mide la memoria; en ese caso se muestra un guion.
     memoria = "-" if r.max_estados_en_memoria is None else str(r.max_estados_en_memoria)
     if not r.encontrado:
-        # Sin solución no hay plan ni costo; se muestran guiones.
-        return [fila.nombre, "-", "-", "-", str(r.nodos_expandidos),
+        # Sin solución no hay plan, costo ni estado final; se muestran guiones.
+        return [fila.nombre, "-", "-", "-", "-", str(r.nodos_expandidos),
                 memoria, f"{fila.tiempo_ms:.3f}"]
     return [
         fila.nombre,
         str(len(r.acciones)),
         str(r.costo),
         "Sí" if fila.optimo else "No",
+        str(r.estado_final),
         str(r.nodos_expandidos),
         memoria,
         f"{fila.tiempo_ms:.3f}",
     ]
 
 
-COLUMNAS_A_LA_IZQUIERDA = {"Algoritmo", "Óptimo"}
+COLUMNAS_A_LA_IZQUIERDA = {"Algoritmo", "Óptimo", "Estado final"}
 """Columnas de texto, que se alinean a la izquierda en la tabla de la terminal.
 
 Las demás son numéricas y se alinean a la derecha, para que las unidades,
@@ -269,7 +276,11 @@ def main(argumentos=None) -> int:
     if args.formato == "csv":
         escribir_csv(filas)
     else:
-        print(f"Estado inicial: {estado}\n")
+        print(f"Estado inicial: {estado}")
+        # Leyenda: recuerda qué es cada componente de la tupla y cuál es la meta,
+        # para leer la columna "Estado final" sin tener que abrir el README.
+        print("Estado (r, a, c, t, b): riesgo, inasistencias, carga, tutorías, bienestar")
+        print(f"Meta: r ≤ {RIESGO_META} y a ≤ {INASISTENCIAS_META}\n")
         tabla = tabla_markdown if args.formato == "markdown" else tabla_texto
         print(tabla(filas))
     if args.planes:

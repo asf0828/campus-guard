@@ -26,6 +26,14 @@ class TestBenchmark(unittest.TestCase):
             self.assertEqual(por_nombre[nombre].resultado.costo, 14)
             self.assertTrue(por_nombre[nombre].optimo)
 
+    def test_estados_finales(self):
+        por_nombre = {f.nombre: f.resultado.estado_final for f in self.filas}
+        self.assertEqual(por_nombre["BFS"], (1, 1, 3, 0, 1))
+        self.assertEqual(por_nombre["DFS"], (0, 1, 1, 0, 1))
+        for nombre in ("A* (h nula)", "A* (h máxima)", "A* (h combinada)"):
+            self.assertEqual(por_nombre[nombre], (2, 1, 4, 2, 1))
+        self.assertIn("(2, 1, 4, 2, 1)", benchmark.tabla_texto(self.filas))
+
     def test_tiempos_positivos(self):
         for fila in self.filas:
             self.assertGreater(fila.tiempo_ms, 0)
