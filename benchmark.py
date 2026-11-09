@@ -10,6 +10,7 @@ Uso:
     python benchmark.py
     python benchmark.py --repeticiones 500 --planes
     python benchmark.py --inicial 8 6 3 0 0 --formato csv
+    python benchmark.py --formato markdown > resultados.md
     python benchmark.py --aima
 """
 
@@ -17,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import itertools
 import sys
 import timeit
 from dataclasses import dataclass
@@ -144,6 +146,48 @@ def _valores(fila: Fila) -> list[str]:
     ]
 
 
+COLUMNAS_A_LA_IZQUIERDA = {"Algoritmo", "Óptimo"}
+"""Columnas de texto, que se alinean a la izquierda en la tabla de la terminal.
+
+Las demás son numéricas y se alinean a la derecha, para que las unidades,
+decenas y centenas queden una debajo de otra y se puedan comparar a simple vista.
+"""
+
+
+def tabla_texto(filas: list[Fila]) -> str:
+    """Construye la tabla comparativa con columnas alineadas para la terminal.
+
+    Los textos se alinean a la izquierda y los números a la derecha. Si hay
+    filas de AIMA, se separan de las propias con una línea.
+    """
+    valores = [_valores(f) for f in filas]
+    # El ancho de cada columna es el del texto más largo que aparece en ella,
+    # contando el encabezado.
+    anchos = [max(len(c), *(len(v[i]) for v in valores)) for i, c in enumerate(COLUMNAS)]
+
+    def linea(celdas):
+        """Arma una línea de la tabla rellenando cada celda hasta el ancho de su columna."""
+        partes = []
+        for columna, celda, ancho in zip(COLUMNAS, celdas, anchos):
+            if columna in COLUMNAS_A_LA_IZQUIERDA:
+                partes.append(celda.ljust(ancho))
+            else:
+                partes.append(celda.rjust(ancho))
+        return "  ".join(partes).rstrip()
+
+    separador = "  ".join("─" * ancho for ancho in anchos)
+    lineas = [linea(COLUMNAS), separador]
+    for fila, celdas in zip(filas, valores):
+        # Antes de la primera fila de AIMA se repite el separador, para
+        # distinguir las filas propias de las de validación.
+        primera_de_aima = "AIMA" in fila.nombre and not any(
+            "AIMA" in f.nombre for f in filas[: filas.index(fila)])
+        if primera_de_aima:
+            lineas.append(separador)
+        lineas.append(linea(celdas))
+    return "\n".join(lineas)
+
+
 def tabla_markdown(filas: list[Fila]) -> str:
     """Construye la tabla comparativa en formato Markdown, lista para pegar en un documento."""
     lineas = [
@@ -168,12 +212,27 @@ def escribir_csv(filas: list[Fila], salida=None) -> None:
 
 
 def planes(filas: list[Fila]) -> str:
-    """Lista el plan de acciones que encontró cada algoritmo."""
-    lineas = []
+    """Lista el plan de acciones que encontró cada algoritmo, con los nombres alineados."""
+    ancho = max(len(f.nombre) for f in filas)
+    lineas = ["Planes encontrados:"]
     for fila in filas:
-        acciones = fila.resultado.acciones
-        lineas.append(f"{fila.nombre}: " + (" → ".join(acciones) if acciones else "-"))
+        lineas.append(f"  {fila.nombre.ljust(ancho)}  {resumir_plan(fila.resultado.acciones)}")
     return "\n".join(lineas)
+
+
+def resumir_plan(acciones: list[str]) -> str:
+    """Une las acciones con flechas y agrupa las repeticiones seguidas.
+
+    Por ejemplo, ``[A, A, A, B]`` se muestra como ``A ×3 → B``.
+    """
+    if not acciones:
+        return "-"
+    # itertools.groupby junta los elementos iguales que están seguidos:
+    # [A, A, B, A] da los grupos (A, [A, A]), (B, [B]) y (A, [A]).
+    grupos = [(accion, len(list(repetidas)))
+              for accion, repetidas in itertools.groupby(acciones)]
+    return " → ".join(accion if veces == 1 else f"{accion} ×{veces}"
+                      for accion, veces in grupos)
 
 
 def main(argumentos=None) -> int:
@@ -188,8 +247,9 @@ def main(argumentos=None) -> int:
                         help="estado inicial (por defecto: %(default)s)")
     parser.add_argument("--repeticiones", type=int, default=100,
                         help="ejecuciones por ronda para medir el tiempo (por defecto: 100)")
-    parser.add_argument("--formato", choices=["tabla", "csv"], default="tabla",
-                        help="formato de salida (por defecto: tabla Markdown)")
+    parser.add_argument("--formato", choices=["texto", "markdown", "csv"], default="texto",
+                        help="formato de salida: texto alineado para la terminal "
+                             "(por defecto), tabla Markdown o CSV")
     parser.add_argument("--planes", action="store_true",
                         help="muestra el plan de acciones de cada algoritmo")
     parser.add_argument("--aima", action="store_true",
@@ -210,7 +270,8 @@ def main(argumentos=None) -> int:
         escribir_csv(filas)
     else:
         print(f"Estado inicial: {estado}\n")
-        print(tabla_markdown(filas))
+        tabla = tabla_markdown if args.formato == "markdown" else tabla_texto
+        print(tabla(filas))
     if args.planes:
         print("\n" + planes(filas))
     return 0

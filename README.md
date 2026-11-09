@@ -62,8 +62,11 @@ El benchmark ejecuta BFS, DFS y A* (con tres heurísticas) sobre el mismo estado
 python benchmark.py --planes                  # muestra el plan de cada algoritmo
 python benchmark.py --repeticiones 500        # más ejecuciones para medir el tiempo
 python benchmark.py --inicial 6 4 2 0 0       # otro estado inicial (r a c t b)
-python benchmark.py --formato csv > resultados.csv
+python benchmark.py --formato markdown > resultados.md   # tabla para documentos
+python benchmark.py --formato csv > resultados.csv       # para hojas de cálculo
 ```
+
+Por defecto la tabla sale en texto alineado para leerla en la terminal, y los planes agrupan las acciones repetidas seguidas (`ASESORIA ×4`).
 
 Para usar los algoritmos desde Python:
 

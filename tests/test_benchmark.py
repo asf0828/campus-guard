@@ -36,6 +36,18 @@ class TestBenchmark(unittest.TestCase):
         self.assertEqual(len(lineas), 2 + len(self.filas))
         self.assertIn("Nodos expandidos", lineas[0])
 
+    def test_tabla_texto_alineada(self):
+        lineas = benchmark.tabla_texto(self.filas).splitlines()
+        self.assertEqual(len(lineas), 2 + len(self.filas))
+        # Las columnas numéricas se alinean a la derecha: todas las filas
+        # terminan en la misma posición que el encabezado.
+        self.assertEqual({len(linea) for linea in lineas}, {len(lineas[0])})
+        self.assertTrue(lineas[2].startswith("BFS "))
+
+    def test_resumir_plan(self):
+        self.assertEqual(benchmark.resumir_plan([]), "-")
+        self.assertEqual(benchmark.resumir_plan(["A", "A", "A", "B", "A"]), "A ×3 → B → A")
+
     def test_linea_de_comandos(self):
         salida = io.StringIO()
         with contextlib.redirect_stdout(salida):
@@ -43,7 +55,16 @@ class TestBenchmark(unittest.TestCase):
         self.assertEqual(codigo, 0)
         texto = salida.getvalue()
         self.assertIn("Algoritmo,Acciones,Costo", texto)
-        self.assertIn("BFS: AJUSTE_CARGA", texto)
+        self.assertIn("Planes encontrados:", texto)
+        self.assertIn("ASESORIA ×4", texto)
+
+    def test_formatos_de_tabla(self):
+        for formato, marca in (("texto", "──"), ("markdown", "|---|")):
+            salida = io.StringIO()
+            with contextlib.redirect_stdout(salida):
+                benchmark.main(["--repeticiones", "1", "--formato", formato])
+            with self.subTest(formato=formato):
+                self.assertIn(marca, salida.getvalue())
 
     def test_estado_inicial_invalido(self):
         with contextlib.redirect_stderr(io.StringIO()):
