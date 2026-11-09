@@ -59,8 +59,15 @@ class TestValidacionAima(unittest.TestCase):
     def test_benchmark_con_aima(self):
         salida = io.StringIO()
         with contextlib.redirect_stdout(salida):
-            benchmark.main(["--aima", "--repeticiones", "1"])
+            benchmark.main(["--aima", "--repeticiones", "1", "--formato", "markdown"])
         self.assertIn("| A* (AIMA, h combinada) | 7 | 14 | Sí | 133 | - |", salida.getvalue())
+
+    def test_tabla_texto_separa_las_filas_de_aima(self):
+        filas = benchmark.ejecutar(repeticiones=1, incluir_aima=True)
+        lineas = benchmark.tabla_texto(filas).splitlines()
+        separadores = [i for i, linea in enumerate(lineas) if linea.startswith("──")]
+        self.assertEqual(len(separadores), 2)
+        self.assertTrue(lineas[separadores[1] + 1].startswith("BFS (AIMA)"))
 
 
 class TestSinAima(unittest.TestCase):
