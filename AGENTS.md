@@ -28,10 +28,11 @@ Al crear archivos, usa esta organización:
 | `campusguard/busquedas.py` | BFS, DFS y A*, independientes del problema |
 | `campusguard/heuristicas.py` | Funciones heurísticas para A* |
 | `benchmark.py` | Ejecuta los tres algoritmos y genera la tabla comparativa |
+| `tests/` | Pruebas con `unittest`, una por módulo (`test_<modulo>.py`) |
 | `docs/` | Documentación del proyecto en Markdown |
 | `requirements.txt` | Dependencias, si llega a haber alguna |
 
-Cuando exista código ejecutable, agrega al `README.md` una sección que explique cómo correrlo.
+Si cambias la forma de ejecutar el proyecto, actualiza la sección "Cómo ejecutar" del `README.md`.
 
 ## Interfaz común
 
@@ -62,9 +63,11 @@ Las heurísticas viven en `campusguard/heuristicas.py`. Toda heurística nueva d
 
 - Python 3.10 o superior, solo biblioteca estándar salvo que el equipo acuerde otra cosa. Si se agrega una dependencia, va en `requirements.txt`.
 - Nombres de módulos, funciones y variables en español y en `snake_case`, sin tildes ni ñ en los identificadores.
-- Cada función pública lleva un docstring corto que diga qué hace, qué recibe y qué devuelve.
+- Cada función, clase, constante y diccionario lleva un docstring o comentario que diga qué es o qué hace, qué recibe y qué devuelve.
+- El código debe servir también para entender los algoritmos. Explica con comentarios los pasos que no son obvios para alguien que está aprendiendo búsqueda: por qué se usa una cola o una pila, cuándo se prueba la meta y por qué, qué significa cada métrica, por qué una heurística es admisible. Comenta el porqué y no repitas lo que la línea ya dice.
 - Si adaptas código de AIMA-Python, indícalo en el docstring del módulo con el enlace al archivo original.
-- Antes de hacer commit, ejecuta `python benchmark.py` y verifica que los tres algoritmos sigan encontrando una solución válida. *Nota: `benchmark.py` todavía no existe. Mientras tanto, verifica tus cambios ejecutando directamente el módulo que modificaste.*
+- Antes de hacer commit, ejecuta `python -m unittest` y `python benchmark.py`. Las pruebas verifican las cifras de control del modelo y la admisibilidad de las heurísticas; si alguna falla, no subas el cambio.
+- Todo comportamiento nuevo lleva su prueba en `tests/`.
 
 ## Documentación
 

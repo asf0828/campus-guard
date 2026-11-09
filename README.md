@@ -46,6 +46,54 @@ Todo el código usa la misma interfaz, al estilo de AIMA-Python, para que los tr
 
 Para el benchmark, un nodo expandido es un nodo al que se le generan sus sucesores. Los tres algoritmos deben contar igual.
 
+## Cómo ejecutar
+
+Se necesita Python 3.10 o superior. El proyecto solo usa la biblioteca estándar, así que no hay que instalar nada.
+
+```bash
+git clone https://github.com/asf0828/campus-guard.git
+cd campus-guard
+python benchmark.py
+```
+
+El benchmark ejecuta BFS, DFS y A* (con tres heurísticas) sobre el mismo estado inicial y muestra una tabla con las acciones del plan, su costo, si es óptimo, los nodos expandidos, el máximo de estados en memoria y el tiempo promedio. Algunas opciones útiles:
+
+```bash
+python benchmark.py --planes                  # muestra el plan de cada algoritmo
+python benchmark.py --repeticiones 500        # más ejecuciones para medir el tiempo
+python benchmark.py --inicial 6 4 2 0 0       # otro estado inicial (r a c t b)
+python benchmark.py --formato csv > resultados.csv
+```
+
+Para usar los algoritmos desde Python:
+
+```python
+from campusguard.problema import CampusGuard
+from campusguard.busquedas import busqueda_a_estrella
+from campusguard.heuristicas import h_combinada
+
+resultado = busqueda_a_estrella(CampusGuard(), h=h_combinada)
+print(resultado.acciones, resultado.costo, resultado.nodos_expandidos)
+```
+
+### Pruebas
+
+```bash
+python -m unittest -v
+```
+
+Las pruebas verifican el modelo (935 estados alcanzables, sin ciclos), los resultados de cada algoritmo, que las heurísticas sean admisibles y consistentes en todos los estados alcanzables, y el script de benchmark.
+
+## Código
+
+| Ruta | Contenido |
+|---|---|
+| `campusguard/problema.py` | Clase base `Problem` y el problema `CampusGuard` |
+| `campusguard/busquedas.py` | BFS, DFS y A* en grafo, independientes del problema |
+| `campusguard/heuristicas.py` | Heurísticas nula, máxima y combinada para A* |
+| `benchmark.py` | Tabla comparativa de los algoritmos |
+| `tests/` | Pruebas del modelo, las búsquedas, las heurísticas y el benchmark |
+
 ## Documentación
 
 La justificación del modelo y de la abstracción del entorno está en [docs/modelo.md](docs/modelo.md). Las convenciones para contribuir al código y a la documentación están en [AGENTS.md](AGENTS.md).
