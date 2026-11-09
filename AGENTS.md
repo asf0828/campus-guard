@@ -27,6 +27,7 @@ Al crear archivos, usa esta organización:
 | `campusguard/problema.py` | Clase del problema CampusGuard |
 | `campusguard/busquedas.py` | BFS, DFS y A*, independientes del problema |
 | `campusguard/heuristicas.py` | Funciones heurísticas para A* |
+| `campusguard/validacion_aima.py` | Búsquedas de AIMA-Python para validar las propias |
 | `benchmark.py` | Ejecuta los tres algoritmos y genera la tabla comparativa |
 | `tests/` | Pruebas con `unittest`, una por módulo (`test_<modulo>.py`) |
 | `docs/` | Documentación del proyecto en Markdown |
@@ -62,6 +63,8 @@ Las heurísticas viven en `campusguard/heuristicas.py`. Toda heurística nueva d
 ## Convenciones de código
 
 - Python 3.10 o superior, solo biblioteca estándar salvo que el equipo acuerde otra cosa. Si se agrega una dependencia, va en `requirements.txt`.
+- AIMA-Python es la única excepción: es opcional, se usa solo en `campusguard/validacion_aima.py` y sus pruebas, y se instala fijada a un commit como explica el README. Ningún otro módulo debe importarla, y todo debe seguir funcionando sin ella.
+- Si cambias una búsqueda propia, corre también las pruebas con AIMA instalado: BFS y A* deben seguir coincidiendo con AIMA en plan, costo y nodos expandidos.
 - Nombres de módulos, funciones y variables en español y en `snake_case`, sin tildes ni ñ en los identificadores.
 - Cada función, clase, constante y diccionario lleva un docstring o comentario que diga qué es o qué hace, qué recibe y qué devuelve.
 - El código debe servir también para entender los algoritmos. Explica con comentarios los pasos que no son obvios para alguien que está aprendiendo búsqueda: por qué se usa una cola o una pila, cuándo se prueba la meta y por qué, qué significa cada métrica, por qué una heurística es admisible. Comenta el porqué y no repitas lo que la línea ya dice.
