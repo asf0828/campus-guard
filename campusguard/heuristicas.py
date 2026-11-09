@@ -15,14 +15,28 @@ propiedades:
 Las tres heurísticas de este módulo cumplen ambas. Las pruebas de
 ``tests/test_heuristicas.py`` lo verifican sobre los 935 estados alcanzables.
 
-Cada heurística recibe un nodo o directamente un estado. Se llama "exceso" a
-lo que separa un estado de la meta: los puntos de riesgo por encima de
-``RIESGO_META`` y las inasistencias por encima de ``INASISTENCIAS_META``.
+Cada heurística recibe un nodo (propio o de AIMA-Python) o directamente un
+estado. Se llama "exceso" a lo que separa un estado de la meta: los puntos de
+riesgo por encima de ``RIESGO_META`` y las inasistencias por encima de
+``INASISTENCIAS_META``.
 """
 
 from __future__ import annotations
 
 from campusguard.problema import INASISTENCIAS_META, RIESGO_META
+
+
+def _estado(nodo_o_estado):
+    """Extrae el estado de un ``Nodo`` propio, de un ``Node`` de AIMA o de una tupla.
+
+    El ``Nodo`` propio guarda el estado en ``.estado`` y el ``Node`` de AIMA en
+    ``.state``. Aceptar ambos permite usar las mismas heurísticas con las dos
+    implementaciones de A*, y aceptar la tupla sola facilita las pruebas.
+    """
+    for atributo in ("estado", "state"):
+        if hasattr(nodo_o_estado, atributo):
+            return getattr(nodo_o_estado, atributo)
+    return nodo_o_estado
 
 
 def _excesos(nodo_o_estado) -> tuple[int, int, int]:
@@ -31,7 +45,7 @@ def _excesos(nodo_o_estado) -> tuple[int, int, int]:
     Un exceso nunca es negativo: si el riesgo ya está por debajo de la meta,
     su exceso es 0.
     """
-    estado = getattr(nodo_o_estado, "estado", nodo_o_estado)
+    estado = _estado(nodo_o_estado)
     r, a, _, _, b = estado
     return max(r - RIESGO_META, 0), max(a - INASISTENCIAS_META, 0), b
 

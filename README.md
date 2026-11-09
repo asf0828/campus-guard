@@ -84,6 +84,28 @@ python -m unittest -v
 
 Las pruebas verifican el modelo (935 estados alcanzables, sin ciclos), los resultados de cada algoritmo, que las heurísticas sean admisibles y consistentes en todos los estados alcanzables, y el script de benchmark.
 
+### Validación con AIMA-Python
+
+Los algoritmos propios se pueden comparar con los de [AIMA-Python](https://github.com/aimacode/aima-python), que se aplican directamente sobre `CampusGuard` porque comparte la interfaz de su clase `Problem`. Es una dependencia opcional: sin ella, todo lo anterior funciona igual y las pruebas de validación se omiten.
+
+AIMA-Python no se publica en PyPI y su instalación normal arrastra paquetes de aprendizaje automático que la búsqueda no usa, así que se instala sin dependencias, más NumPy, dentro de un entorno virtual:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install --no-deps "git+https://github.com/aimacode/aima-python.git@49ebbc316192e84489f8bcb061e24b69150598fc"
+pip install numpy
+```
+
+pip avisará que a `aima` le faltan dependencias como TensorFlow; para este proyecto no hacen falta. Con el entorno activo:
+
+```bash
+python benchmark.py --aima
+python -m unittest tests.test_validacion_aima -v
+```
+
+BFS y A* (con las tres heurísticas) dan los mismos planes, costos y nodos expandidos en ambas implementaciones. DFS difiere porque AIMA apila los sucesores en el orden en que los devuelve `actions` y explora primero la última acción, mientras que la implementación propia explora primero la primera; eso muestra cuánto depende DFS del orden de las acciones. AIMA no mide los estados en memoria y es más lento, porque comprueba si un nodo está en la frontera recorriéndola completa.
+
 ## Código
 
 | Ruta | Contenido |
@@ -91,6 +113,7 @@ Las pruebas verifican el modelo (935 estados alcanzables, sin ciclos), los resul
 | `campusguard/problema.py` | Clase base `Problem` y el problema `CampusGuard` |
 | `campusguard/busquedas.py` | BFS, DFS y A* en grafo, independientes del problema |
 | `campusguard/heuristicas.py` | Heurísticas nula, máxima y combinada para A* |
+| `campusguard/validacion_aima.py` | Las mismas búsquedas ejecutadas con AIMA-Python (opcional) |
 | `benchmark.py` | Tabla comparativa de los algoritmos |
 | `tests/` | Pruebas del modelo, las búsquedas, las heurísticas y el benchmark |
 

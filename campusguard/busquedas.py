@@ -92,7 +92,8 @@ class Resultado:
     * ``costo``: costo total del plan, o ``None`` si no hubo solución.
     * ``estado_final``: estado al que llega el plan.
     * ``nodos_expandidos``: cuántos nodos se expandieron.
-    * ``max_estados_en_memoria``: máximo de estados guardados a la vez.
+    * ``max_estados_en_memoria``: máximo de estados guardados a la vez, o
+      ``None`` si la implementación no permite medirlo (como AIMA-Python).
     """
 
     algoritmo: str
@@ -101,7 +102,7 @@ class Resultado:
     costo: Optional[float] = None
     estado_final: object = None
     nodos_expandidos: int = 0
-    max_estados_en_memoria: int = 0
+    max_estados_en_memoria: Optional[int] = 0  # None si no se puede medir
 
 
 def _resultado(algoritmo, nodo, expandidos, memoria) -> Resultado:

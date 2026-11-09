@@ -3,11 +3,14 @@
 Para cada algoritmo reporta las acciones del plan, su costo, si es óptimo,
 los nodos expandidos, el máximo de estados en memoria y el tiempo promedio de
 ejecución. A* se ejecuta con cada heurística de ``campusguard.heuristicas``.
+Con ``--aima`` agrega las mismas búsquedas ejecutadas con AIMA-Python, para
+validar la implementación propia.
 
 Uso:
     python benchmark.py
     python benchmark.py --repeticiones 500 --planes
     python benchmark.py --inicial 8 6 3 0 0 --formato csv
+    python benchmark.py --aima
 """
 
 from __future__ import annotations
@@ -27,6 +30,7 @@ from campusguard.busquedas import (
 )
 from campusguard.heuristicas import h_combinada, h_maxima, h_nula
 from campusguard.problema import ESTADO_INICIAL, CampusGuard
+from campusguard import validacion_aima
 
 ALGORITMOS: list[tuple[str, Callable[[CampusGuard], Resultado]]] = [
     ("BFS", busqueda_anchura),
@@ -40,6 +44,20 @@ ALGORITMOS: list[tuple[str, Callable[[CampusGuard], Resultado]]] = [
 Cada función recibe el problema y devuelve un ``Resultado``. Las de A* se
 envuelven en ``lambda`` para fijar la heurística, de modo que todas tengan la
 misma forma y el benchmark las pueda ejecutar igual.
+"""
+
+ALGORITMOS_AIMA: list[tuple[str, Callable[[CampusGuard], Resultado]]] = [
+    ("BFS (AIMA)", validacion_aima.anchura_aima),
+    ("DFS (AIMA)", validacion_aima.profundidad_aima),
+    ("A* (AIMA, h nula)", lambda p: validacion_aima.a_estrella_aima(p, h=h_nula)),
+    ("A* (AIMA, h máxima)", lambda p: validacion_aima.a_estrella_aima(p, h=h_maxima)),
+    ("A* (AIMA, h combinada)",
+     lambda p: validacion_aima.a_estrella_aima(p, h=h_combinada)),
+]
+"""Las mismas búsquedas ejecutadas con AIMA-Python, para validar las propias.
+
+Solo se ejecutan con ``--aima``. Si la implementación propia es correcta, BFS
+y A* deben dar los mismos planes, costos y nodos expandidos que estas.
 """
 
 COLUMNAS = [
@@ -82,14 +100,23 @@ def medir_tiempo(funcion: Callable[[], object], repeticiones: int) -> float:
     return min(rondas) / repeticiones * 1000
 
 
-def ejecutar(estado_inicial=ESTADO_INICIAL, repeticiones: int = 100) -> list[Fila]:
-    """Ejecuta todos los algoritmos sobre el mismo estado inicial y devuelve sus filas."""
+def ejecutar(estado_inicial=ESTADO_INICIAL, repeticiones: int = 100,
+             incluir_aima: bool = False) -> list[Fila]:
+    """Ejecuta todos los algoritmos sobre el mismo estado inicial y devuelve sus filas.
+
+    Con ``incluir_aima`` agrega las búsquedas de AIMA-Python; lanza
+    ``ImportError`` si AIMA no está instalado.
+    """
+    if incluir_aima and not validacion_aima.aima_disponible():
+        raise ImportError(validacion_aima.INSTALACION)
     problema = CampusGuard(estado_inicial)
     # El costo óptimo de referencia se obtiene con A* sin heurística (búsqueda
     # de costo uniforme), que siempre encuentra el plan más barato.
     costo_optimo = busqueda_a_estrella(problema, h=h_nula).costo
+    # Primero los algoritmos propios y, si se pide, después los de AIMA.
+    algoritmos = ALGORITMOS + (ALGORITMOS_AIMA if incluir_aima else [])
     filas = []
-    for nombre, buscar in ALGORITMOS:
+    for nombre, buscar in algoritmos:
         resultado = buscar(problema)  # una ejecución para obtener el plan y las métricas
         tiempo = medir_tiempo(lambda: buscar(problema), repeticiones)  # y muchas para el tiempo
         optimo = resultado.encontrado and resultado.costo == costo_optimo
@@ -100,17 +127,19 @@ def ejecutar(estado_inicial=ESTADO_INICIAL, repeticiones: int = 100) -> list[Fil
 def _valores(fila: Fila) -> list[str]:
     """Convierte una fila en la lista de textos de cada columna, en el orden de ``COLUMNAS``."""
     r = fila.resultado
+    # AIMA no mide la memoria; en ese caso se muestra un guion.
+    memoria = "-" if r.max_estados_en_memoria is None else str(r.max_estados_en_memoria)
     if not r.encontrado:
         # Sin solución no hay plan ni costo; se muestran guiones.
         return [fila.nombre, "-", "-", "-", str(r.nodos_expandidos),
-                str(r.max_estados_en_memoria), f"{fila.tiempo_ms:.3f}"]
+                memoria, f"{fila.tiempo_ms:.3f}"]
     return [
         fila.nombre,
         str(len(r.acciones)),
         str(r.costo),
         "Sí" if fila.optimo else "No",
         str(r.nodos_expandidos),
-        str(r.max_estados_en_memoria),
+        memoria,
         f"{fila.tiempo_ms:.3f}",
     ]
 
@@ -163,16 +192,18 @@ def main(argumentos=None) -> int:
                         help="formato de salida (por defecto: tabla Markdown)")
     parser.add_argument("--planes", action="store_true",
                         help="muestra el plan de acciones de cada algoritmo")
+    parser.add_argument("--aima", action="store_true",
+                        help="agrega las búsquedas de AIMA-Python para validar la implementación")
     args = parser.parse_args(argumentos)
 
     if args.repeticiones < 1:
         parser.error("--repeticiones debe ser al menos 1")
     estado = tuple(args.inicial)
     try:
-        filas = ejecutar(estado, args.repeticiones)
-    except ValueError as error:
-        # Estado inicial fuera de rango: se muestra como error de uso y no
-        # como un error interno del programa.
+        filas = ejecutar(estado, args.repeticiones, incluir_aima=args.aima)
+    except (ValueError, ImportError) as error:
+        # Estado inicial fuera de rango o AIMA no instalado: se muestra como
+        # error de uso, con su explicación, y no como un error interno.
         parser.error(str(error))
 
     if args.formato == "csv":
