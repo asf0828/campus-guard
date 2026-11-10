@@ -1,7 +1,13 @@
-import heapq
-import itertools
-import math
-from dataclasses import dataclass
+"""Problema CampusGuard y nodo del árbol de búsqueda.
+
+Este módulo es la base común de las búsquedas: ``busqueda_no_informada.py``
+(BFS y DFS) y ``busqueda_informada.py`` (A*) importan de aquí el problema y
+el nodo. La heurística vive en ``heuristicas.py`` y el problema la expone en
+su método ``h``.
+"""
+
+from heuristicas import heuristica_admisible
+
 
 class ProblemaCampusGuard:
     inicial = (10, 8, 4, 0, 0)
@@ -57,75 +63,35 @@ class ProblemaCampusGuard:
         state = node.state if hasattr(node, "state") else node
         return heuristica_admisible(state)
 
-def _transiciones_relajadas(estado):
-    r, a, b = estado
-    sucesores = []
-    if r > 0:
-        sucesores.append(((max(0, r - 1), a, b), 1))
 
-    if a > 0:
-        sucesores.append(((r, max(0, a - 1), b), 1))
+# ---------------------------------------------------------------------------
+# Nodo del árbol de búsqueda
+# ---------------------------------------------------------------------------
 
-    if r > 0 and a > 0:
-        sucesores.append(((max(0, r - 1), max(0, a - 1), b), 2))
-
-    if b == 0:
-        sucesores.append(((max(0, r - 2), max(0, a - 3), 1), 4))
-
-    if r > 0:
-        sucesores.append(((max(0, r - 3), a, b), 5))
-
-    return sucesores
-
-def construir_tabla_patrones():
-    estados = [
-        (r, a, b)
-        for r in range(11)
-        for a in range(9)
-        for b in (0, 1)
-    ]
-
-    inverso = {estado: [] for estado in estados}
-    for estado in estados:
-        for siguiente, costo in _transiciones_relajadas(estado):
-            inverso[siguiente].append((estado, costo))
-
-    distancias = {
-        estado: 0
-        for estado in estados
-        if estado[0] <= 2 and estado[1] <= 1
-    }
-    frontera = [(0, estado) for estado in distancias]
-    heapq.heapify(frontera)
-
-    while frontera:
-        costo_actual, estado = heapq.heappop(frontera)
-        if costo_actual != distancias[estado]:
-            continue
-
-        for predecesor, costo_arista in inverso[estado]:
-            nuevo_costo = costo_actual + costo_arista
-            if nuevo_costo < distancias.get(predecesor, math.inf):
-                distancias[predecesor] = nuevo_costo
-                heapq.heappush(frontera, (nuevo_costo, predecesor))
-
-    return distancias
-
-TABLA_PATRONES = construir_tabla_patrones()
-
-def heuristica_admisible(state):
-    r, a, _c, _t, b = state
-    return TABLA_PATRONES[(r, a, b)]
-
-@dataclass
 class Nodo:
-    state: tuple
-    parent: object = None
-    action: str = None
-    path_cost: int = 0
-    depth: int = 0
+    """Nodo del árbol de búsqueda: estado, padre, acción, costo g(n) y profundidad."""
+
+    __slots__ = ('state', 'parent', 'action', 'path_cost', 'depth')
+
+    def __init__(self, state, parent=None, action=None, path_cost=0, depth=None):
+        self.state = state
+        self.parent = parent
+        self.action = action
+        self.path_cost = path_cost
+        # Si no se indica, la profundidad es la del padre más uno.
+        self.depth = depth if depth is not None else (parent.depth + 1 if parent else 0)
+
+    def expandir(self, problema):
+        """Genera y devuelve los nodos hijos aplicando cada acción posible."""
+        hijos = []
+        for accion in problema.actions(self.state):
+            siguiente = problema.result(self.state, accion)
+            costo = problema.path_cost(self.path_cost, self.state, accion, siguiente)
+            hijos.append(Nodo(siguiente, self, accion, costo))
+        return hijos
 
     def solucion(self):
+        """Devuelve la secuencia de acciones desde la raíz hasta este nodo."""
         acciones = []
         nodo = self
         while nodo.parent is not None:
@@ -134,101 +100,10 @@ class Nodo:
         return list(reversed(acciones))
 
     def camino_estados(self):
+        """Devuelve la secuencia de estados desde la raíz hasta este nodo."""
         estados = []
         nodo = self
         while nodo is not None:
             estados.append(nodo.state)
             nodo = nodo.parent
         return list(reversed(estados))
-
-def busqueda_a_estrella(problema):
-    contador = itertools.count()
-    raiz = Nodo(problema.initial)
-
-    frontera = [(problema.h(raiz), next(contador), raiz)]
-    mejor_costo = {raiz.state: 0}
-
-    expandidos = 0
-    generados = 1
-    max_frontera = 1
-    max_memoria = 1
-
-    while frontera:
-        _prioridad, _orden, nodo = heapq.heappop(frontera)
-
-        if nodo.path_cost != mejor_costo.get(nodo.state):
-            continue
-
-        if problema.goal_test(nodo.state):
-            return {
-                "nodo": nodo,
-                "acciones": nodo.solucion(),
-                "estados": nodo.camino_estados(),
-                "costo": nodo.path_cost,
-                "profundidad": nodo.depth,
-                "nodos_expandidos": expandidos,
-                "nodos_generados": generados,
-                "max_frontera": max_frontera,
-                "max_memoria": max_memoria,
-            }
-
-        expandidos += 1
-
-        for accion in problema.actions(nodo.state):
-            siguiente = problema.result(nodo.state, accion)
-            nuevo_costo = problema.path_cost(
-                nodo.path_cost, nodo.state, accion, siguiente
-            )
-            generados += 1
-
-            if nuevo_costo < mejor_costo.get(siguiente, math.inf):
-                mejor_costo[siguiente] = nuevo_costo
-                hijo = Nodo(
-                    state=siguiente,
-                    parent=nodo,
-                    action=accion,
-                    path_cost=nuevo_costo,
-                    depth=nodo.depth + 1,
-                )
-                prioridad = nuevo_costo + problema.h(hijo)
-                heapq.heappush(
-                    frontera, (prioridad, next(contador), hijo)
-                )
-
-        max_frontera = max(max_frontera, len(frontera))
-        max_memoria = max(max_memoria, len(mejor_costo))
-
-    return None
-
-#EJECUCIÓN
-
-def main():
-    problema = ProblemaCampusGuard()
-    resultado = busqueda_a_estrella(problema)
-
-    print("Estado inicial:", problema.initial)
-    print("Meta: r <= 2 y a <= 1")
-    print("\n=== A* (BUSQUEDA INFORMADA) ===")
-
-    if resultado is None:
-        print("No se encontró una solución.")
-        return
-
-    print("Secuencia de acciones:")
-    for i, (accion, estado) in enumerate(
-        zip(resultado["acciones"], resultado["estados"][1:]), start=1
-    ):
-        print(f"{i:>2}. {accion:<15} -> {estado}")
-
-    print("\nNúmero de acciones  :", resultado["profundidad"])
-    print("Costo total g(n)    :", resultado["costo"])
-    print("Nodos expandidos    :", resultado["nodos_expandidos"])
-    print("Nodos generados     :", resultado["nodos_generados"])
-    print("Frontera máxima     :", resultado["max_frontera"])
-    print("Estados en memoria  :", resultado["max_memoria"])
-    print("h(estado inicial)   :", heuristica_admisible(problema.initial))
-
-
-if __name__ == "__main__":
-    main()
-
