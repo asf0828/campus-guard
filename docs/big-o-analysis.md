@@ -83,7 +83,7 @@ Estas cifras deben actualizarse si cambia el código o se ejecuta un benchmark n
 El factor de ramificación efectivo `b*` es el valor que satisface la ecuación:
 
 $$
-N = 1 + b^* + (b^*)^2 + \cdots + (b^*)^d
+N = 1 + b^{*} + (b^{*})^{2} + \cdots + (b^{*})^{d}
 $$
 
 Su interpretación exige que `N` sea el número de nodos generados hasta la profundidad de solución `d`, usando una convención de conteo uniforme. Aunque el modelo informa 935 estados alcanzables, estos abarcan profundidades hasta `m = 16`, mientras que `d = 6` es la profundidad de la solución menos profunda. Por esa diferencia, y porque los resultados disponibles no incluyen un conteo homogéneo de nodos generados hasta `d` para cada algoritmo, no se reporta un valor numérico de `b*`.
