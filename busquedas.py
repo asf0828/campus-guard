@@ -4,7 +4,7 @@ import itertools
 import math
 from collections import deque
 
-from .heuristicas import heuristica_admisible
+from heuristicas import heuristica_admisible
 
 
 class Nodo:
@@ -269,3 +269,9 @@ def imprimir_resultado(nombre, resultado):
     print("Nodos expandidos:", resultado["nodos_expandidos"])
     print("Frontera máxima:", resultado["max_frontera"])
     print("Memoria máxima:", resultado["max_memoria"])
+
+
+if __name__ == "__main__":
+    from problema import ProblemaCampusGuard
+    problema = ProblemaCampusGuard()
+    imprimir_resultado("A*", busqueda_a_estrella(problema))
