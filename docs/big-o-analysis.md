@@ -60,13 +60,13 @@ Estas cotas son análisis generales de los algoritmos. No deben confundirse con 
 
 ## Resultados experimentales disponibles
 
-La tabla siguiente recoge los resultados comparativos registrados para el estado inicial y la meta del modelo. Los costos son unidades relativas de costo institucional definidas por las acciones; no representan horas reales. Los tiempos son mediciones de ejecución y pueden variar entre equipos y corridas.
+La tabla siguiente recoge los resultados comparativos registrados para el estado inicial y la meta del modelo. Los costos son unidades relativas de costo institucional definidas por las acciones; no representan horas reales. Los tiempos se obtuvieron con `benchmark.py`, como promedio de 100 ejecuciones (mediana de tres corridas), y pueden variar entre equipos.
 
 | Algoritmo | Nodos expandidos | Tiempo registrado | Costo del plan |
 |---|---:|---:|---:|
-| BFS | 175 | 1,74 ms | 16 |
-| DFS | 8 | 0,07 ms | 23 |
-| A* | 136 | 2,72 ms | 14 |
+| BFS | 175 | 0,60 ms | 16 |
+| DFS | 8 | 0,03 ms | 23 |
+| A* | 136 | 0,66 ms | 14 |
 
 En estos resultados, A* expandió 136 nodos frente a los 175 de BFS. La reducción relativa de expansiones fue:
 
