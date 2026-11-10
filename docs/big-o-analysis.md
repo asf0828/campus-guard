@@ -115,7 +115,7 @@ El factor de ramificación efectivo ($b^*$) permite estimar el crecimiento del �
 Su expresión matemática es:
 
 $$
-N=1+b^*+(b^*)^2+\cdots+(b^*)^d
+N = 1 + b^* + (b^*)^2 + ... + (b^*)^d
 $$
 
 Donde:
