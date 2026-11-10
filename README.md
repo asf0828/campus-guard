@@ -32,7 +32,7 @@ Cada estudiante se representa con la tupla `(r, a, c, t, b)`:
 | `BIENESTAR` | `b == 0` | `r - 2`, `a - 3`, `b = 1` | 4 |
 | `AJUSTE_CARGA` | `c > 1` y `r > 0` | `r - 3`, `c - 1` | 5 |
 
-Ningún valor baja de 0. El costo de un plan es la suma de los costos de sus acciones.
+Ningún valor baja de 0. El costo de un plan es la suma de los costos de sus acciones, en unidades relativas.
 
 ### Interfaz común
 
@@ -46,9 +46,39 @@ Todo el código usa la misma interfaz, al estilo de AIMA-Python, para que los tr
 
 Para el benchmark, un nodo expandido es un nodo al que se le generan sus sucesores. Los tres algoritmos deben contar igual.
 
+## Cómo ejecutar
+
+Se necesita Python 3.10 o superior. El proyecto solo usa la biblioteca estándar, así que no hay que instalar nada.
+
+```bash
+git clone https://github.com/asf0828/campus-guard.git
+cd campus-guard
+python busqueda_no_informada.py   # BFS y DFS, con el plan paso a paso
+python busqueda_informada.py      # A*, con el plan paso a paso
+python benchmark.py               # los tres algoritmos con nodos, tiempo y costo
+```
+
+El benchmark ejecuta los tres algoritmos sobre el mismo estado inicial y reporta el plan encontrado, el número de acciones, el costo, los nodos expandidos, la frontera máxima, los estados en memoria y el tiempo promedio de 100 ejecuciones. Los tiempos dependen del equipo; el resto de las cifras es siempre el mismo.
+
+| Algoritmo | Acciones | Costo | Nodos expandidos | Estados en memoria |
+|---|---|---|---|---|
+| BFS | 6 | 16 | 175 | 293 |
+| DFS | 8 | 23 | 8 | 24 |
+| A* | 7 | 14 | 136 | 332 |
+
+## Código
+
+| Archivo | Contenido |
+|---|---|
+| `problema.py` | El problema `ProblemaCampusGuard` y el nodo del árbol de búsqueda |
+| `heuristicas.py` | La heurística de A*: costo exacto de un problema relajado que ignora los límites de carga y de tutorías |
+| `busqueda_no_informada.py` | BFS y DFS en grafo |
+| `busqueda_informada.py` | A* en grafo, guiado por la heurística del problema |
+| `benchmark.py` | Comparación de los tres algoritmos sobre el mismo estado inicial |
+
 ## Documentación
 
-La justificación del modelo y de la abstracción del entorno está en [docs/modelo.md](docs/modelo.md). Las convenciones para contribuir al código y a la documentación están en [AGENTS.md](AGENTS.md).
+La justificación del modelo y de la abstracción del entorno está en [docs/modelo.md](docs/modelo.md), y el análisis de complejidad de los tres algoritmos en [docs/big-o-analysis.md](docs/big-o-analysis.md). Las convenciones para contribuir al código y a la documentación están en [AGENTS.md](AGENTS.md).
 
 ## Referencias
 
