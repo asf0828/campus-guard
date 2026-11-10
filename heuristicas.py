@@ -1,67 +1,72 @@
 
+import heapq
+import math
 
-from heapq import heappop, heappush
-from itertools import product
+
+def _transiciones_relajadas(estado):
+    r, a, b = estado
+    sucesores = []
+
+    if r > 0:
+        sucesores.append(((max(0, r - 1), a, b), 1))
+
+    if a > 0:
+        sucesores.append(((r, max(0, a - 1), b), 1))
+
+    if r > 0 and a > 0:
+        sucesores.append(((max(0, r - 1), max(0, a - 1), b), 2))
+
+    if b == 0:
+        sucesores.append(((max(0, r - 2), max(0, a - 3), 1), 4))
+
+    if r > 0:
+        sucesores.append(((max(0, r - 3), a, b), 5))
+
+    return sucesores
 
 
-def construir_tabla_heuristica():
-    
-    estados = list(product(range(11), range(9), range(2)))
-    transiciones_inversas = {estado: [] for estado in estados}
+def construir_tabla_patrones():
+    estados = [
+        (r, a, b)
+        for r in range(11)
+        for a in range(9)
+        for b in (0, 1)
+    ]
 
-    for r, a, b in estados:
-        origen = (r, a, b)
-        acciones = []
+    inverso = {estado: [] for estado in estados}
 
-        if r > 0:
-            acciones.append(((max(r - 1, 0), a, b), 1))  # TUTORIA
-            acciones.append(((max(r - 3, 0), a, b), 5))  # AJUSTE_CARGA
-
-        if a > 0:
-            acciones.append(((r, max(a - 1, 0), b), 1))  # SEGUIMIENTO
-
-        if r > 0 and a > 0:
-            acciones.append(
-                ((max(r - 1, 0), max(a - 1, 0), b), 2)
-            )  # ASESORIA
-
-        if b == 0:
-            acciones.append(
-                ((max(r - 2, 0), max(a - 3, 0), 1), 4)
-            )  # BIENESTAR
-
-        for destino, costo in acciones:
-            transiciones_inversas[destino].append((origen, costo))
-
-    distancias = {}
-
-    frontera = []
     for estado in estados:
-        r, a, b = estado
-        if r <= 2 and a <= 1:
-            distancias[estado] = 0
-            heappush(frontera, (0, estado))
+        for siguiente, costo in _transiciones_relajadas(estado):
+            inverso[siguiente].append((estado, costo))
+
+    distancias = {
+        estado: 0
+        for estado in estados
+        if estado[0] <= 2 and estado[1] <= 1
+    }
+
+    frontera = [(0, estado) for estado in distancias]
+    heapq.heapify(frontera)
 
     while frontera:
-        costo_actual, estado = heappop(frontera)
+        costo_actual, estado = heapq.heappop(frontera)
 
-        if costo_actual > distancias[estado]:
+        if costo_actual != distancias[estado]:
             continue
 
-        for anterior, costo in transiciones_inversas[estado]:
-            nuevo_costo = costo_actual + costo
+        for predecesor, costo_arista in inverso[estado]:
+            nuevo_costo = costo_actual + costo_arista
 
-            if nuevo_costo < distancias.get(anterior, float("inf")):
-                distancias[anterior] = nuevo_costo
-                heappush(frontera, (nuevo_costo, anterior))
+            if nuevo_costo < distancias.get(predecesor, math.inf):
+                distancias[predecesor] = nuevo_costo
+                heapq.heappush(frontera, (nuevo_costo, predecesor))
 
     return distancias
 
 
-TABLA_HEURISTICA = construir_tabla_heuristica()
+TABLA_PATRONES = construir_tabla_patrones()
 
 
 def heuristica_admisible(state):
-    """Devuelve una estimacion admisible del costo restante hasta la meta."""
-    r, a, c, t, b = state
-    return TABLA_HEURISTICA[(r, a, b)]
+    r, a, _c, _t, b = state
+    return TABLA_PATRONES[(r, a, b)]
