@@ -1,9 +1,3 @@
-"""
-PROYECTO CAMPUSGUARD (FASE 2) - AGENTE DE BÚSQUEDA Y BENCHMARK EXPERIMENTAL
-Integración de Búsqueda No Informada (BFS, DFS) e Informada (A*)
-
-Basado en la estructura del documento 'Búsqueda no informada (BFS y DFS) txt.txt'
-"""
 
 import time
 import math
