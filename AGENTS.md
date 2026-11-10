@@ -4,7 +4,7 @@ Guía para cualquier persona o agente de IA que trabaje en este repositorio. Lé
 
 ## Qué es este proyecto
 
-CampusGuard planifica la secuencia de intervenciones que lleva a un estudiante en riesgo de abandono a una situación de riesgo bajo con el menor costo posible. El problema se modela como búsqueda en un espacio de estados y se resuelve con BFS, DFS y A*, que luego se comparan entre sí. El modelo completo está en `README.md` y su justificación en `docs/modelo.md`.
+CampusGuard planifica la secuencia de intervenciones que lleva a un estudiante en riesgo de abandono a una situación de riesgo bajo con el menor costo posible. El problema se modela como búsqueda en un espacio de estados y se resuelve con BFS, DFS y A*, que luego se comparan entre sí. El modelo completo está en `README.md`, su justificación en `docs/modelo.md` y el análisis de complejidad en `docs/big-o-analysis.md`.
 
 ## El modelo es un contrato
 
@@ -20,18 +20,18 @@ Las reglas que no se deben romper:
 
 ## Organización del código
 
-Al crear archivos, usa esta organización:
+Cada concepto vive en un solo archivo. Antes de definir algo, revisa si ya existe e impórtalo en lugar de copiarlo.
 
-| Ruta | Contenido |
+| Archivo | Contenido |
 |---|---|
-| `campusguard/problema.py` | Clase del problema CampusGuard |
-| `campusguard/busquedas.py` | BFS, DFS y A*, independientes del problema |
-| `campusguard/heuristicas.py` | Funciones heurísticas para A* |
-| `benchmark.py` | Ejecuta los tres algoritmos y genera la tabla comparativa |
+| `problema.py` | `ProblemaCampusGuard` y `Nodo`, la base común que importan las búsquedas |
+| `heuristicas.py` | La heurística de A*; el problema la expone en su método `h` |
+| `busqueda_no_informada.py` | BFS y DFS |
+| `busqueda_informada.py` | A* |
+| `benchmark.py` | Importa los tres algoritmos y los compara; no define algoritmos propios |
 | `docs/` | Documentación del proyecto en Markdown |
-| `requirements.txt` | Dependencias, si llega a haber alguna |
 
-Cuando exista código ejecutable, agrega al `README.md` una sección que explique cómo correrlo.
+Si cambias la forma de ejecutar el proyecto, actualiza la sección "Cómo ejecutar" del `README.md`.
 
 ## Interfaz común
 
@@ -45,7 +45,7 @@ path_cost(c, state1, action, state2) -> float
 h(node) -> float   # solo para A*
 ```
 
-Los algoritmos reciben un problema y devuelven el camino encontrado, su costo y las métricas. No deben conocer los detalles de CampusGuard: si un algoritmo menciona `r` o `TUTORIA`, está acoplado al problema y hay que corregirlo.
+Los algoritmos reciben un problema y devuelven el camino encontrado, su costo y las métricas. No deben conocer los detalles de CampusGuard: si un algoritmo menciona `r` o `TUTORIA`, está acoplado al problema y hay que corregirlo. Por eso A* obtiene la heurística con `problema.h(nodo)` y no llamando directamente a la función de `heuristicas.py`.
 
 ## Métricas del benchmark
 
@@ -53,18 +53,18 @@ Los tres algoritmos se miden con los mismos criterios, o la comparación no vale
 
 - **Nodo expandido:** nodo al que se le generan sus sucesores. Se cuenta igual en BFS, DFS y A*.
 - **Tiempo:** promedio de muchas ejecuciones con `timeit`, porque una sola corrida dura menos de un milisegundo.
-- **Costo:** suma de los costos de las acciones del plan.
+- **Costo:** suma de los costos de las acciones del plan, en unidades relativas (no son horas).
 - Siempre el mismo estado inicial y la misma meta.
 
-Las heurísticas viven en `campusguard/heuristicas.py`. Toda heurística nueva debe probarse admisible y consistente recorriendo los estados alcanzables (`h(n) <= h*(n)` y `h(n) <= costo(n, n') + h(n')`) antes de usarse en resultados.
+Las heurísticas viven en `heuristicas.py`. Toda heurística nueva debe probarse admisible y consistente recorriendo los estados alcanzables (`h(n) <= h*(n)` y `h(n) <= costo(n, n') + h(n')`) antes de usarse en resultados.
 
 ## Convenciones de código
 
-- Python 3.10 o superior, solo biblioteca estándar salvo que el equipo acuerde otra cosa. Si se agrega una dependencia, va en `requirements.txt`.
+- Python 3.10 o superior, solo biblioteca estándar salvo que el equipo acuerde otra cosa. Si se agrega una dependencia, crea un `requirements.txt` con ella y explícalo en el README.
 - Nombres de módulos, funciones y variables en español y en `snake_case`, sin tildes ni ñ en los identificadores.
 - Cada función pública lleva un docstring corto que diga qué hace, qué recibe y qué devuelve.
 - Si adaptas código de AIMA-Python, indícalo en el docstring del módulo con el enlace al archivo original.
-- Antes de hacer commit, ejecuta `python benchmark.py` y verifica que los tres algoritmos sigan encontrando una solución válida. *Nota: `benchmark.py` todavía no existe. Mientras tanto, verifica tus cambios ejecutando directamente el módulo que modificaste.*
+- Antes de hacer commit, ejecuta `python benchmark.py` y verifica que los tres algoritmos sigan encontrando una solución válida con las cifras de la tabla del README: BFS 175 nodos y costo 16, DFS 8 y 23, A* 136 y 14. Si cambian, algo se rompió.
 
 ## Documentación
 
